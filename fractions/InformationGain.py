@@ -40,7 +40,9 @@ def information_gain_expression(data, target_attr, attribute):
         frac = format_fraction(count, len(data))
 
         # Ентропия като съкратен израз
-        ent_short = f"Entr({format_fraction(subset_class_counts.get('Да', 0), sum(subset_class_counts.values()))}*{format_fraction(subset_class_counts.get('Не', 0), sum(subset_class_counts.values()))})"
+        classes = list(subset_class_counts.keys())
+        fractions = [format_fraction(subset_class_counts[c], sum(subset_class_counts.values())) for c in classes]
+        ent_short = f"Entr({'*'.join(fractions)})"
         subsets_expr.append(f"{frac} * {ent_short}")
 
         # Ентропия като разгърнат израз
@@ -59,17 +61,62 @@ def information_gain_expression(data, target_attr, attribute):
 
 # 📌 Данни за тест
 data = [
-    {"Цвят": "червен", "Форма": "кръг", "Клас": "Да"},
-    {"Цвят": "зелен", "Форма": "кръг", "Клас": "Не"},
-    {"Цвят": "червен", "Форма": "триъгълник", "Клас": "Да"},
-    {"Цвят": "жълт", "Форма": "кръг", "Клас": "Да"},
-    {"Цвят": "зелен", "Форма": "квадрат", "Клас": "Не"},
-    {"Цвят": "жълт", "Форма": "триъгълник", "Клас": "Не"},
-    {"Цвят": "червен", "Форма": "квадрат", "Клас": "Да"},
-    {"Цвят": "червен", "Форма": "квадрат", "Клас": "Не"},
-    {"Цвят": "жълт", "Форма": "квадрат", "Клас": "Да"},
-    {"Цвят": "жълт", "Форма": "квадрат", "Клас": "Да"},
+  {
+    "heavy": "no",
+    "smelly": "no",
+    "big": "no",
+    "growling": "no",
+    "bites": "no"
+  },
+  {
+    "heavy": "no",
+    "smelly": "no",
+    "big": "yes",
+    "growling": "no",
+    "bites": "no"
+  },
+  {
+    "heavy": "yes",
+    "smelly": "yes",
+    "big": "no",
+    "growling": "yes",
+    "bites": "no"
+  },
+  {
+    "heavy": "yes",
+    "smelly": "no",
+    "big": "no",
+    "growling": "yes",
+    "bites": "yes"
+  },
+  {
+    "heavy": "no",
+    "smelly": "yes",
+    "big": "yes",
+    "growling": "no",
+    "bites": "yes"
+  },
+  {
+    "heavy": "no",
+    "smelly": "no",
+    "big": "yes",
+    "growling": "yes",
+    "bites": "yes"
+  },
+  {
+    "heavy": "no",
+    "smelly": "no",
+    "big": "no",
+    "growling": "yes",
+    "bites": "yes"
+  },
+  {
+    "heavy": "yes",
+    "smelly": "yes",
+    "big": "no",
+    "growling": "no",
+    "bites": "yes"
+  }
 ]
-
 # 📌 Стартиране
-print(information_gain_expression(data, target_attr="Клас", attribute="Цвят"))
+print(information_gain_expression(data, target_attr="bites", attribute="growling"))

@@ -39,7 +39,9 @@ class TableApp:
         tk.Button(self.button_frame, text="Премахни ред", command=self.remove_row).pack(pady=5)
         tk.Button(self.button_frame, text="Добави колона", command=self.add_column).pack(pady=5)
         tk.Button(self.button_frame, text="Премахни колона", command=self.remove_column).pack(pady=5)
-        tk.Button(self.button_frame, text="Запази таблица", command=self.save_table).pack(pady=20)
+        tk.Button(self.button_frame, text="Запази таблица", command=self.save_table).pack(pady=5)
+        tk.Button(self.button_frame, text="Изчисти таблица", command=self.clear_table).pack(pady=5)
+        tk.Button(self.button_frame, text="Зареди таблица", command=self.load_table).pack(pady=20)
 
         self.add_row()  # първи ред
 
@@ -84,16 +86,68 @@ class TableApp:
             messagebox.showwarning("Внимание", "Таблицата е празна.")
             return
 
-        # Последната колона е "Клас", останалите са "Атрибут N"
-        num_cols = len(data[0])
-        headers = [f"Атрибут {i+1}" for i in range(num_cols - 1)] + ["Клас"]
+        # Първият ред приема ролята на заглавия (хедъри)
+        headers = data[0]
+        records = data[1:]  # останалите редове са реални записи
 
-        dict_data = [dict(zip(headers, row)) for row in data]
+        dict_data = [dict(zip(headers, row)) for row in records]
 
         with open("data.json", "w", encoding="utf-8") as f:
             json.dump(dict_data, f, ensure_ascii=False, indent=2)
 
         messagebox.showinfo("Успех", "Таблицата е запазена в data.json")
+
+    def clear_table(self):
+        """Изчистване на всички редове и колони."""
+        for row in self.rows:
+            for widget in row:
+                widget.destroy()
+        self.rows.clear()
+        self.num_cols = 3
+        self.add_row()
+
+    def load_table(self):
+        """Зареждане на таблицата от файла data.json."""
+        try:
+            with open("data.json", "r", encoding="utf-8") as f:
+                dict_data = json.load(f)
+
+            if not dict_data:
+                messagebox.showwarning("Внимание", "Таблицата е празна.")
+                return
+
+            # Първият ред е заглавията (хедъри)
+            headers = list(dict_data[0].keys())
+            self.clear_table()  # Изчистваме съществуващата таблица
+
+            # Добавяме колоните и заглавията (първи ред)
+            self.num_cols = len(headers)
+            for i, header in enumerate(headers):
+                entry = tk.Entry(self.scrollable_frame, width=15)
+                entry.insert(tk.END, header)  # Вмъкване на заглавието в първия ред
+                entry.grid(row=0, column=i, padx=5, pady=5)  # Позиционираме заглавието
+
+            # Добавяме данните (останалите редове)
+            for row_index, row_data in enumerate(dict_data):
+                row = []
+                for col_index, header in enumerate(headers):
+                    entry = tk.Entry(self.scrollable_frame, width=15)
+                    entry.insert(tk.END, row_data.get(header, ''))
+                    entry.grid(row=row_index + 1, column=col_index, padx=5, pady=5)  # Позиционираме данните
+                    row.append(entry)
+                self.rows.append(row)  # Добавяме реда в self.rows
+
+            # След добавяне на всички данни, обновяваме таблицата
+            self.update_table()
+
+        except Exception as e:
+            messagebox.showerror("Грешка", f"Не може да зареди файла: {e}")
+
+    def update_table(self):
+        """Обновяване на таблицата (поставяне на стойностите в редовете)."""
+        for i, row in enumerate(self.rows):
+            for j, entry in enumerate(row):
+                entry.grid(row=i, column=j, padx=5, pady=5)
 
 if __name__ == "__main__":
     root = tk.Tk()

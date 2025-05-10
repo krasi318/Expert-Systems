@@ -22,13 +22,10 @@ def calculate_entropy(data):
     if not data or len(data) < 2:
         return "Няма достатъчно данни за изчисление."
 
-    # Пропускаме първия ред (предполага се, че е "заглавен")
-    data_without_header = data[1:]
-
     # Вземаме последната колона по ключ
     target_attr = list(data[0].keys())[-1]
 
-    class_counts = Counter(row[target_attr] for row in data_without_header)
+    class_counts = Counter(row[target_attr] for row in data)
     expression = entropy_expression(class_counts, target_attr)
 
     summary = f"📊 Класове по {target_attr}: {dict(class_counts)}\n🎯 Ентропията на {target_attr} е:\n{expression}"

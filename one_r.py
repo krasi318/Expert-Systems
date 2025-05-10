@@ -1,13 +1,12 @@
 import json
 from collections import defaultdict, Counter
 import tkinter as tk
-from tkinter import simpledialog, messagebox
-
+from tkinter import scrolledtext
 
 def load_data():
     with open("data.json", "r", encoding="utf-8") as f:
-        return json.load(f)
-
+        data = json.load(f)
+    return data
 
 def train_one_r_verbose(data, target):
     attributes = [key for key in data[0] if key != target]
@@ -51,42 +50,32 @@ def train_one_r_verbose(data, target):
 
     return best_attr, best_rules, full_log
 
+def display_results(log):
+    # Създаване на графичен прозорец
+    root = tk.Tk()
+    root.title("Резултати от OneR")
 
-def classify(example, best_attr, best_rules, target):
-    val = example[best_attr]
-    prediction = best_rules.get(val, "неизвестно")
-    log = f"\n🔍 Класификация за пример:\n"
-    log += f" - Стойност на {best_attr}: {val}\n"
-    log += f" - Предсказан {target}: {prediction}\n"
-    return log
+    # Добавяне на скролваща текстова област
+    text_area = scrolledtext.ScrolledText(root, wrap=tk.WORD, width=100, height=30)
+    text_area.grid(row=0, column=0, padx=10, pady=10)
+    text_area.insert(tk.END, log)
+    text_area.config(state=tk.DISABLED)
 
+    # Запуск на GUI
+    root.mainloop()
 
 def main():
     try:
         data = load_data()
-        target = list(data[0].keys())[-1]
+        target = list(data[0].keys())[-1]  # Вземаме последния ключ като целева променлива
 
         best_attr, best_rules, log = train_one_r_verbose(data, target)
 
-        # Избор на индекс за тестов ред
-        root = tk.Tk()
-        root.withdraw()
-        test_index = simpledialog.askinteger("Избор на ред", f"Въведи номер на ред за тест (0 - {len(data)-1}):")
-        if test_index is None or test_index < 0 or test_index >= len(data):
-            messagebox.showerror("Грешка", "Невалиден индекс!")
-            return
-
-        example = data[test_index]
-        example_no_target = {k: v for k, v in example.items() if k != target}
-
-        log += classify(example_no_target, best_attr, best_rules, target)
-
-        # Показване на резултата
-        messagebox.showinfo("Резултат", log)
+        # Показване на резултатите в GUI прозорец
+        display_results(log)
 
     except Exception as e:
-        messagebox.showerror("Грешка", f"⚠️ Възникна грешка:\n{e}")
-
+        print(f"⚠️ Възникна грешка:\n{e}")
 
 if __name__ == "__main__":
     main()

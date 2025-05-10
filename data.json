@@ -1,22 +1,58 @@
 [
   {
-    "Атрибут 1": "цвят",
-    "Атрибут 2": "мирис",
-    "Клас": "член"
+    "heavy": "no",
+    "smelly": "no",
+    "big": "no",
+    "growling": "no",
+    "bites": "no"
   },
   {
-    "Атрибут 1": "бял",
-    "Атрибут 2": "хубав",
-    "Клас": "кур"
+    "heavy": "no",
+    "smelly": "no",
+    "big": "yes",
+    "growling": "no",
+    "bites": "no"
   },
   {
-    "Атрибут 1": "черен",
-    "Атрибут 2": "хубав",
-    "Клас": "кур"
+    "heavy": "yes",
+    "smelly": "yes",
+    "big": "no",
+    "growling": "yes",
+    "bites": "no"
   },
   {
-    "Атрибут 1": "лилава",
-    "Атрибут 2": "хубав",
-    "Клас": "путка"
+    "heavy": "yes",
+    "smelly": "no",
+    "big": "no",
+    "growling": "yes",
+    "bites": "yes"
+  },
+  {
+    "heavy": "no",
+    "smelly": "yes",
+    "big": "yes",
+    "growling": "no",
+    "bites": "yes"
+  },
+  {
+    "heavy": "no",
+    "smelly": "no",
+    "big": "yes",
+    "growling": "yes",
+    "bites": "yes"
+  },
+  {
+    "heavy": "no",
+    "smelly": "no",
+    "big": "no",
+    "growling": "yes",
+    "bites": "yes"
+  },
+  {
+    "heavy": "yes",
+    "smelly": "yes",
+    "big": "no",
+    "growling": "no",
+    "bites": "yes"
   }
 ]

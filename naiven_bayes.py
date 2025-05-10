@@ -1,21 +1,22 @@
 import json
 import tkinter as tk
 from collections import defaultdict, Counter
+from tkinter import simpledialog, messagebox
 
 # 📌 Зарежда и обработва JSON
+
 def load_data():
     with open("data.json", "r", encoding="utf-8") as f:
         data = json.load(f)
     return data
 
-# 📌 Основна логика на Naive Bayes
-def predict_verbose(data, example):
+# 📌 Наивен Байес с избираеми атрибути и потребителски вход
+
+def predict_verbose(data, example, selected_attrs):
     if len(data) < 2:
         return "Няма достатъчно данни."
 
-    data = data[1:]  # игнорира първия ред с "заглавия"
     target = list(data[0].keys())[-1]
-    attributes = [k for k in data[0] if k != target]
 
     class_counts = Counter(row[target] for row in data)
     total = len(data)
@@ -24,7 +25,7 @@ def predict_verbose(data, example):
     cond_probs = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
     for row in data:
         cls = row[target]
-        for attr in attributes:
+        for attr in selected_attrs:
             val = row[attr]
             cond_probs[attr][val][cls] += 1
 
@@ -45,7 +46,7 @@ def predict_verbose(data, example):
         steps = [prob]
         step_strs = [class_frac]
 
-        for attr in attributes:
+        for attr in selected_attrs:
             val = example[attr]
             count = cond_probs[attr][val].get(cls, 0) * class_counts[cls]
             denom = class_counts[cls]
@@ -69,15 +70,32 @@ def predict_verbose(data, example):
     output.append(f"\n✅ Най-вероятен клас: {best}")
     return "\n".join(output)
 
-# 📌 Показване на изхода
-def show_result(index):
+# 📌 Показване на резултат
+
+def show_custom_prediction():
+    data = load_data()
+    headers = list(data[0].keys())
+    target_attr = headers[-1]
+    attributes = [k for k in headers if k != target_attr]
+
+    selected_attrs = []
+    for attr in attributes:
+        if messagebox.askyesno("Избор на атрибути", f"Да използваме атрибута '{attr}'?"):
+            selected_attrs.append(attr)
+
+    if not selected_attrs:
+        messagebox.showerror("Грешка", "Не са избрани атрибути.")
+        return
+
+    example = {}
+    for attr in selected_attrs:
+        value = simpledialog.askstring("Вход", f"Въведи стойност за '{attr}':")
+        if value is None:
+            return  # отказан вход
+        example[attr] = value
+
     try:
-        data = load_data()
-        headers = data[0]
-        target_attr = list(headers.keys())[-1]
-        row = data[index + 1]  # +1 защото първият ред е заглавие
-        example = {k: v for k, v in row.items() if k != target_attr}
-        result = predict_verbose(data, example)
+        result = predict_verbose(data, example, selected_attrs)
     except Exception as e:
         result = f"⚠️ Грешка: {e}"
 
@@ -88,6 +106,7 @@ def show_result(index):
     text.pack(padx=20, pady=20, expand=True, fill="both")
 
 # 📌 Основен прозорец с избор
+
 def main():
     data = load_data()
 
@@ -98,7 +117,7 @@ def main():
     label.pack(pady=(10, 0))
 
     listbox = tk.Listbox(window, width=80, height=10, font=("Consolas", 11))
-    for i, row in enumerate(data[1:]):  # пропускаме заглавията
+    for i, row in enumerate(data[1:]):
         values = ', '.join(f"{k}={v}" for k, v in row.items())
         listbox.insert(tk.END, f"[{i}] {values}")
     listbox.pack(padx=10, pady=10)
@@ -107,10 +126,23 @@ def main():
         selected = listbox.curselection()
         if selected:
             index = selected[0]
-            show_result(index)
+            headers = data[0]
+            target_attr = list(headers.keys())[-1]
+            row = data[index + 1]
+            example = {k: v for k, v in row.items() if k != target_attr}
+            result = predict_verbose(data, example, list(example.keys()))
 
-    btn = tk.Button(window, text="Анализирай", command=on_select)
+            result_window = tk.Toplevel()
+            result_window.title("Резултат от Naive Bayes")
+            text = tk.Text(result_window, wrap="word", font=("Consolas", 12))
+            text.insert("1.0", result)
+            text.pack(padx=20, pady=20, expand=True, fill="both")
+
+    btn = tk.Button(window, text="Анализирай избран ред", command=on_select)
     btn.pack(pady=(0, 10))
+
+    custom_btn = tk.Button(window, text="Създай собствен пример", command=show_custom_prediction)
+    custom_btn.pack(pady=(0, 10))
 
     window.mainloop()
 

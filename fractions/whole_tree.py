@@ -1,4 +1,47 @@
+import json
 from collections import Counter, defaultdict
+import math
+
+
+# 📌 Изчисляване на ентропия
+def calculate_entropy(class_counts):
+    total = sum(class_counts.values())
+    entropy = 0
+    for count in class_counts.values():
+        frac = count / total
+        entropy -= frac * math.log2(frac) if frac > 0 else 0
+    return entropy
+
+
+# 📌 Намиране на най-добрия атрибут по информация
+def find_best_attribute(data, target_attr):
+    attributes = [attr for attr in data[0].keys() if attr != target_attr]
+    ig_values = {}
+
+    for attr in attributes:
+        # Разделяме данните по стойностите на атрибута
+        attr_class_counts = defaultdict(Counter)
+        for row in data:
+            attr_class_counts[row[attr]][row[target_attr]] += 1
+
+        # Изчисляваме претеглената ентропия
+        weighted_entropy = 0
+        total = len(data)
+        for val in attr_class_counts:
+            subset_total = sum(attr_class_counts[val].values())
+            weighted_entropy += (subset_total / total) * calculate_entropy(attr_class_counts[val])
+
+        # Изчисляваме общата ентропия на целевия атрибут
+        total_entropy = calculate_entropy(Counter(row[target_attr] for row in data))
+
+        # Информация на атрибута
+        ig = total_entropy - weighted_entropy
+        ig_values[attr] = ig
+
+    # Връщаме атрибута с най-висока информация
+    best_attr = max(ig_values, key=ig_values.get)
+    return best_attr
+
 
 # 📌 Извеждане на дървото на решения
 def print_decision_tree(data, target_attr, depth=0):
@@ -11,9 +54,8 @@ def print_decision_tree(data, target_attr, depth=0):
         print(f"{indent}Клас: {single_class}")
         return
 
-    # 📌 Избор на най-добър атрибут (с най-много IG, но без сметки)
-    attributes = [attr for attr in data[0].keys() if attr != target_attr]
-    best_attr = find_best_attribute_simple(data, attributes, target_attr)
+    # 📌 Избор на най-добър атрибут (с най-много IG)
+    best_attr = find_best_attribute(data, target_attr)
 
     print(f"{indent}{best_attr}:")
     values = sorted(set(row[best_attr] for row in data))
@@ -25,29 +67,15 @@ def print_decision_tree(data, target_attr, depth=0):
         else:
             print(f"{indent}    Клас: неизвестен")
 
-# 📌 Намери най-добър атрибут по честота на разделяне (заместител на IG без сметки)
-def find_best_attribute_simple(data, attributes, target_attr):
-    max_splits = -1
-    best_attr = None
-    for attr in attributes:
-        splits = len(set(row[attr] for row in data))
-        if splits > max_splits:
-            max_splits = splits
-            best_attr = attr
-    return best_attr
 
 # 📌 Данни
-data = [
-    {"Цвят": "червен", "Форма": "кръг", "Клас": "Да"},
-    {"Цвят": "зелен", "Форма": "кръг", "Клас": "Не"},
-    {"Цвят": "червен", "Форма": "триъгълник", "Клас": "Да"},
-    {"Цвят": "жълт", "Форма": "кръг", "Клас": "Да"},
-    {"Цвят": "зелен", "Форма": "квадрат", "Клас": "Не"},
-    {"Цвят": "жълт", "Форма": "триъгълник", "Клас": "Не"},
-    {"Цвят": "червен", "Форма": "квадрат", "Клас": "Да"},
-    {"Цвят": "жълт", "Форма": "квадрат", "Клас": "Да"},
-]
+
+try:
+    with open("data.json", "r", encoding="utf-8") as f:
+        data = json.load(f)
+except Exception as e:
+     print(f"⚠️ Грешка: {e}")
 
 # 📌 Изпълнение
 print("Решаващо дърво:")
-print_decision_tree(data, target_attr="Клас")
+print_decision_tree(data, target_attr="bites")
