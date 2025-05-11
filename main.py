@@ -1,8 +1,22 @@
 import tkinter as tk
 import subprocess
+import sys
+import os
+
+def resource_path(relative_path):
+    """Get the absolute path to the resource, whether running as an executable or not."""
+    if hasattr(sys, '_MEIPASS'):
+        # PyInstaller bundles files in _MEIPASS during runtime
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.abspath(relative_path)
 
 def open_page(script_name):
-    subprocess.Popen(["python", script_name])
+    """Opens the selected script using subprocess."""
+    if script_name:
+        # Get the full path to the script
+        full_path = resource_path(script_name)
+        # Open the Python script using subprocess
+        subprocess.Popen([sys.executable, full_path])
 
 root = tk.Tk()
 root.title("Решаване на задачи по ЕС")
@@ -16,9 +30,10 @@ root.resizable(True, True)
 tk.Label(root, text="Решаване на задачи по ЕС", font=("Arial", 20), bg="gray").grid(row=0, column=0, columnspan=3, pady=20)
 
 # Add the first button in the first row, centered across all columns
-tk.Button(root, text="Вкарай таблица", width=20, height=2, command=lambda: open_page("enter_table.py")).grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
+tk.Button(root, text="Вкарай таблица", width=20, height=2,
+          command=lambda: open_page("enter_table.py")).grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
 
-# Button list and layout in a grid with multiple rows and columns (excluding "Вкарай таблица" and "помощ")
+# Buttons list
 buttons = [
     ("ONE R", "one_r.py"),
     ("НАИВЕН БЕЙС", "naiven_bayes.py"),
@@ -29,19 +44,20 @@ buttons = [
     ("Цяло дърво beta", "whole_tree.py"),
     ("тази функ ще се добави скоро!", None),
     ("тази функ ще се добави скоро!", None),
-
 ]
 
-# Use grid layout for buttons (adjust for multiple columns and rows)
+# Use grid layout for buttons
 for idx, (text, script) in enumerate(buttons):
-    row = (idx // 3) + 2  # Start from row 2, as row 1 is taken by the first button
-    col = idx % 3  # This will distribute buttons into columns
-    tk.Button(root, text=text, width=20, height=2, command=lambda s=script: open_page(s)).grid(row=row, column=col, padx=10, pady=10, sticky="ew")
+    row = (idx // 3) + 2  # Start from row 2
+    col = idx % 3
+    tk.Button(root, text=text, width=20, height=2,
+              command=lambda s=script: open_page(s)).grid(row=row, column=col, padx=10, pady=10, sticky="ew")
 
-# Add the "помощ" button in the bottom-left corner, with the same size as "Вкарай таблица"
-tk.Button(root, text="помощ", width=20, height=2, command=lambda: open_page("help.py")).grid(row=row + 1, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
+# Add the "помощ" button
+tk.Button(root, text="помощ", width=20, height=2,
+          command=lambda: open_page("help.py")).grid(row=row + 1, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
 
-# Make the columns resize dynamically when the window is resized
+# Allow columns to resize dynamically
 for col in range(3):
     root.grid_columnconfigure(col, weight=1)
 
